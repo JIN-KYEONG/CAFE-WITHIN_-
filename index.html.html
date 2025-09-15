@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ 위드인카페 주문표</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f5dc 0%, #d2b48c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: #4a2b1a;
+            margin-bottom: 30px;
+        }
+        
+        .header h3 {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .mode-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
+        }
+        
+        .mode-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #4a2b1a;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .mode-btn.active {
+            background: #FFD700;
+            color: #333;
+        }
+
+        .content-area {
+            display: none;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .content-area.active {
+            display: block;
+        }
+
+        .order-form, .order-history-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .location-grid, .menu-grid, .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+        
+        .location-item, .menu-item, .teacher-item {
+            padding: 15px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+        .input-item {
+            padding: 15px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+        .input-item.active {
+             border-color: #667eea;
+             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .location-item:hover, .menu-item:hover, .teacher-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .location-item.selected, .menu-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: scale(1.05);
+        }
+        
+        .teacher-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .teacher-grid.show {
+            display: grid;
+            animation: slideDown 0.3s ease;
+        }
+        .teacher-input-container {
+             padding: 15px;
+             border: 3px solid #e0e0e0;
+             border-radius: 15px;
+             background: #f8f9fa;
+             margin-top: 15px;
+             display: none;
+        }
+
+        .teacher-item.selected {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+            border-color: transparent;
+        }
+        .teacher-input, .location-input {
+             width: 100%;
+             padding: 10px;
+             border: 1px solid #ccc;
+             border-radius: 8px;
+             font-size: 1em;
+        }
+
+        .menu-emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .menu-name {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .menu-desc {
+            font-size: 0.9em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .temp-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .temp-option {
+            padding: 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1.3em;
+            background: #f8f9fa;
+        }
+
+        .temp-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .temp-option.selected {
+            border-color: transparent;
+            transform: scale(1.05);
+        }
+
+        .temp-option.hot.selected {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+            color: white;
+        }
+
+        .temp-option.ice.selected {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a3aa 100%);
+            color: white;
+        }
+
+        .temp-option.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .tumbler-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .radio-label:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        .radio-label::before {
+            content: '';
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        
+        .radio-label:has(input:checked) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .radio-label:has(input:checked)::before {
+            border-color: white;
+            background: white;
+            box-shadow: 0 0 0 4px #667eea;
+        }
+
+        .tumbler-numbers {
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .tumbler-numbers.show {
+            display: grid;
+            animation: slideDown 0.3s ease;
+        }
+
+        .tumbler-num-btn {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: white;
+        }
+
+        .tumbler-num-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .tumbler-num-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .option-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .option-item:has(input:checked) {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .option-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #48bb78;
+        }
+
+        .order-summary {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .summary-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            text-align: right;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: #333;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-reset:hover {
+            background: #d0d0d0;
+        }
+
+        .order-table-container {
+            overflow-x: auto;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            min-width: 600px;
+        }
+
+        .order-table th, .order-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .order-table th {
+            background-color: #f2f2f2;
+            font-weight: 700;
+            color: #555;
+        }
+
+        .order-table tbody tr.completed {
+            background-color: #e6f9ed;
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+        
+        .order-table tbody tr.completed .complete-checkbox:checked {
+            background-color: #38a169;
+        }
+
+        .order-table tbody tr:not(.completed):hover {
+            background-color: #f9f9f9;
+        }
+
+        .complete-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            .location-grid, .menu-grid, .options-grid, .temp-options, .radio-group, .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            .tumbler-numbers {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h3>부천상록학교</h3>
+            <h1>☕ 위드인카페 주문표</h1>
+            <p>커피를 만듭니다. 꿈을 만듭니다.</p>
+        </div>
+
+        <div class="mode-switcher">
+            <button class="mode-btn active" onclick="switchMode('order')">🛒 주문하기</button>
+            <button class="mode-btn" onclick="switchMode('admin')">📋 주문 현황</button>
+        </div>
+
+        <div id="orderMode" class="content-area active">
+            <div class="order-form">
+                <div class="form-section">
+                    <div class="section-title"><span>📍</span><span>위치 선택</span></div>
+                    <div class="location-grid">
+                        <div class="location-item" data-location="교장실">교장실</div>
+                        <div class="location-item" data-location="시설관리실">시설관리실</div>
+                        <div class="location-item" data-location="행정실">행정실</div>
+                        <div class="location-item" data-location="2층 교무실">2층 교무실</div>
+                        <div class="location-item" data-location="보건실">보건실</div>
+                        <div class="location-item" data-location="진로직업실">진로직업실</div>
+                        <div class="location-item" data-location="기타">기타</div>
+                    </div>
+                     <div class="input-item" id="otherLocationInputContainer" style="display: none;">
+                        <input type="text" id="otherLocationInput" class="location-input" placeholder="위치를 직접 입력해주세요">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title"><span>👤</span><span>선생님 선택</span></div>
+                    <div id="noLocationMsg" style="text-align: center; color: #999; padding: 20px;">먼저 위치를 선택해주세요</div>
+                    <div class="teacher-grid" id="teacherGrid"></div>
+                    <div class="teacher-input-container" id="otherTeacherInputContainer" style="display: none;">
+                        <input type="text" id="otherTeacherInput" class="teacher-input" placeholder="성함을 직접 입력해주세요">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title"><span>☕</span><span>메뉴 선택</span></div>
+                    <div class="menu-grid">
+                        <div class="menu-item" data-menu="아메리카노"><div class="menu-emoji">☕</div><div class="menu-name">아메리카노</div></div>
+                        <div class="menu-item" data-menu="카페라떼"><div class="menu-emoji">🥛</div><div class="menu-name">카페라떼</div></div>
+                        <div class="menu-item" data-menu="카라멜라떼"><div class="menu-emoji">🍮</div><div class="menu-name">카라멜라떼</div></div>
+                        <div class="menu-item" data-menu="아이스티"><div class="menu-emoji">🍹</div><div class="menu-name">아이스티</div></div>
+                        <div class="menu-item" data-menu="아샷추"><div class="menu-emoji">💪</div><div class="menu-name">아샷추</div><div class="menu-desc">(아이스티+샷)</div></div>
+                        <div class="menu-item" data-menu="말차라떼"><div class="menu-emoji">🍵</div><div class="menu-name">말차라떼</div></div>
+                        <div class="menu-item" data-menu="초코라떼"><div class="menu-emoji">🍫</div><div class="menu-name">초코라떼</div></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title"><span>🌡️</span><span>HOT / ICE 선택</span></div>
+                    <div class="temp-options">
+                        <div class="temp-option hot" data-temp="HOT">🔥 HOT</div>
+                        <div class="temp-option ice" data-temp="ICE">🧊 ICE</div>
+                    </div>
+                    <div id="tempWarning" style="color: #ff6b6b; margin-top: 10px; display: none; font-weight: bold; text-align: center;"></div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title"><span>🥤</span><span>컵 선택</span></div>
+                    <div class="tumbler-section">
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="tumbler" value="위드인 컵" checked>
+                                <span class="radio-text">위드인 컵</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="tumbler" value="개인 텀블러">
+                                <span class="radio-text">개인 텀블러</span>
+                            </label>
+                        </div>
+                        <div class="tumbler-numbers" id="tumblerNumbers">
+                            <div class="tumbler-num-btn" data-number="1">1번</div>
+                            <div class="tumbler-num-btn" data-number="2">2번</div>
+                            <div class="tumbler-num-btn" data-number="3">3번</div>
+                            <div class="tumbler-num-btn" data-number="4">4번</div>
+                            <div class="tumbler-num-btn" data-number="5">5번</div>
+                            <div class="tumbler-num-btn" data-number="6">6번</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title"><span>📝</span><span>기타사항</span></div>
+                    <div class="options-grid">
+                        <label class="option-item"><input type="checkbox" class="option-checkbox" value="샷추가"><span>샷추가</span></label>
+                        <label class="option-item"><input type="checkbox" class="option-checkbox" value="시럽추가"><span>시럽추가</span></label>
+                        <label class="option-item"><input type="checkbox" class="option-checkbox" value="연하게"><span>연하게</span></label>
+                        <label class="option-item"><input type="checkbox" class="option-checkbox" value="얼음 많이"><span>얼음 많이</span></label>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-title">✔️ 주문 확인</div>
+                    <div class="summary-item"><div class="summary-label">위치/선생님:</div><div class="summary-value" id="summaryLocationTeacher">선택 안 함</div></div>
+                    <div class="summary-item"><div class="summary-label">메뉴:</div><div class="summary-value" id="summaryMenu">선택 안 함</div></div>
+                    <div class="summary-item"><div class="summary-label">온도:</div><div class="summary-value" id="summaryTemp">선택 안 함</div></div>
+                    <div class="summary-item"><div class="summary-label">컵:</div><div class="summary-value" id="summaryTumbler">위드인 컵</div></div>
+                    <div class="summary-item"><div class="summary-label">기타사항:</div><div class="summary-value" id="summaryOptions">선택 안 함</div></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-submit" onclick="submitOrder()">주문하기</button>
+                    <button class="btn btn-reset" onclick="resetForm()">초기화</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="adminMode" class="content-area">
+            <div class="order-history-section">
+                <h2>📋 주문 현황</h2>
+                <div class="order-table-container">
+                    <table class="order-table">
+                        <thead>
+                            <tr>
+                                <th>순번</th>
+                                <th>위치/선생님</th>
+                                <th>메뉴</th>
+                                <th>온도</th>
+                                <th>컵</th>
+                                <th>기타사항</th>
+                                <th>제조 완료</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const teachersByLocation = {
+            '교장실': ['황대섭 교장 선생님'],
+            '시설관리실': ['송병삼 주무관님', '손성모 주무관님', '이승환 주무관님'],
+            '행정실': ['최은실 선생님', '문혜원 선생님', '이미선 선생님', '이재윤 선생님', '이송이 선생님', '권태흥 선생님', '한미소 선생님'],
+            '2층 교무실': ['양해실 교감 선생님', '최상돈 교감 선생님', '김미영 선생님', '박현혜 선생님', '오미자 선생님', '강보경 선생님', '최종수 선생님'],
+            '보건실': ['윤지우 보건 선생님'],
+            '진로직업실': ['길혜옥 선생님'],
+            '기타': [] // '기타' 위치는 사전에 정해진 선생님 목록이 없습니다.
+        };
+
+        let selected = {
+            location: null,
+            teacher: null,
+            menu: null,
+            temp: null,
+            cup: '위드인 컵',
+            tumblerNumber: null,
+            options: []
+        };
+        let orders = [];
+
+        const locationItems = document.querySelectorAll('.location-item');
+        const teacherGrid = document.getElementById('teacherGrid');
+        const noLocationMsg = document.getElementById('noLocationMsg');
+        const otherLocationInputContainer = document.getElementById('otherLocationInputContainer');
+        const otherLocationInput = document.getElementById('otherLocationInput');
+        const otherTeacherInputContainer = document.getElementById('otherTeacherInputContainer');
+        const otherTeacherInput = document.getElementById('otherTeacherInput');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const tempOptions = document.querySelectorAll('.temp-option');
+        const tempWarning = document.getElementById('tempWarning');
+        const cupRadios = document.querySelectorAll('input[name="tumbler"]');
+        const tumblerNumbers = document.getElementById('tumblerNumbers');
+        const tumblerNumBtns = document.querySelectorAll('.tumbler-num-btn');
+        const optionCheckboxes = document.querySelectorAll('.option-checkbox');
+
+        const summaryLocationTeacher = document.getElementById('summaryLocationTeacher');
+        const summaryMenu = document.getElementById('summaryMenu');
+        const summaryTemp = document.getElementById('summaryTemp');
+        const summaryTumbler = document.getElementById('summaryTumbler');
+        const summaryOptions = document.getElementById('summaryOptions');
+        const orderList = document.getElementById('orderList');
+        
+        function switchMode(mode) {
+            const allModes = document.querySelectorAll('.content-area');
+            const allBtns = document.querySelectorAll('.mode-btn');
+
+            allModes.forEach(el => el.classList.remove('active'));
+            allBtns.forEach(el => el.classList.remove('active'));
+
+            if (mode === 'order') {
+                document.getElementById('orderMode').classList.add('active');
+                document.querySelector('.mode-btn:nth-child(1)').classList.add('active');
+            } else if (mode === 'admin') {
+                document.getElementById('adminMode').classList.add('active');
+                document.querySelector('.mode-btn:nth-child(2)').classList.add('active');
+                renderAdminTable();
+            }
+        }
+        
+        function updateSummary() {
+            let locationText = '선택 안 함';
+            if (selected.location === '기타' && otherLocationInput.value) {
+                locationText = otherLocationInput.value;
+            } else if (selected.location) {
+                locationText = selected.location;
+            }
+
+            let teacherText = '선택 안 함';
+            if (otherTeacherInput.value) {
+                teacherText = otherTeacherInput.value;
+            } else if (selected.teacher) {
+                teacherText = selected.teacher;
+            }
+            
+            summaryLocationTeacher.textContent = `${locationText} / ${teacherText}`;
+            summaryMenu.textContent = selected.menu || '선택 안 함';
+            summaryTemp.textContent = selected.temp || '선택 안 함';
+            
+            if (selected.cup === '개인 텀블러') {
+                summaryTumbler.textContent = `개인 텀블러 (${selected.tumblerNumber || '번호 미선택'})`;
+            } else {
+                summaryTumbler.textContent = '위드인 컵';
+            }
+
+            summaryOptions.textContent = selected.options.length > 0
+                ? selected.options.join(', ')
+                : '선택 안 함';
+        }
+
+        function resetForm() {
+            Object.keys(selected).forEach(key => selected[key] = null);
+            selected.cup = '위드인 컵';
+            selected.options = [];
+            otherLocationInput.value = '';
+            otherTeacherInput.value = '';
+
+            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+            document.querySelector('input[name="tumbler"][value="위드인 컵"]').checked = true;
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+            
+            teacherGrid.classList.remove('show');
+            teacherGrid.innerHTML = '';
+            noLocationMsg.style.display = 'block';
+            otherLocationInputContainer.style.display = 'none';
+            otherTeacherInputContainer.style.display = 'none';
+
+            tumblerNumbers.classList.remove('show');
+            tempOptions.forEach(option => option.classList.remove('disabled'));
+            tempWarning.style.display = 'none';
+
+            updateSummary();
+        }
+
+        function createTeacherButtons(location) {
+            teacherGrid.innerHTML = '';
+            const teachers = teachersByLocation[location];
+            if (teachers && teachers.length > 0) {
+                noLocationMsg.style.display = 'none';
+                teacherGrid.classList.add('show');
+                otherTeacherInputContainer.style.display = 'block';
+                
+                teachers.forEach(teacher => {
+                    const btn = document.createElement('div');
+                    btn.classList.add('teacher-item');
+                    btn.textContent = teacher;
+                    btn.setAttribute('data-teacher', teacher);
+                    teacherGrid.appendChild(btn);
+
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.teacher-item').forEach(el => el.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        otherTeacherInput.value = '';
+                        selected.teacher = teacher;
+                        updateSummary();
+                    });
+                });
+            } else if (location) {
+                noLocationMsg.style.display = 'none';
+                teacherGrid.classList.remove('show');
+                otherTeacherInputContainer.style.display = 'block';
+            } else {
+                 noLocationMsg.style.display = 'block';
+                 teacherGrid.classList.remove('show');
+                 otherTeacherInputContainer.style.display = 'none';
+            }
+        }
+        
+        locationItems.forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.location-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selected.location = item.dataset.location;
+                selected.teacher = null;
+                otherTeacherInput.value = '';
+                
+                if (selected.location === '기타') {
+                    otherLocationInputContainer.style.display = 'block';
+                    otherLocationInput.focus();
+                } else {
+                    otherLocationInputContainer.style.display = 'none';
+                    otherLocationInput.value = '';
+                }
+                
+                createTeacherButtons(selected.location);
+                updateSummary();
+            });
+        });
+
+        otherLocationInput.addEventListener('input', updateSummary);
+        otherTeacherInput.addEventListener('input', updateSummary);
+        
+        otherLocationInput.addEventListener('focus', () => {
+             document.querySelectorAll('.location-item').forEach(el => el.classList.remove('selected'));
+             document.querySelector('.location-item[data-location="기타"]').classList.add('selected');
+             selected.location = '기타';
+             createTeacherButtons(selected.location);
+             updateSummary();
+        });
+        
+        otherTeacherInput.addEventListener('focus', () => {
+             document.querySelectorAll('.teacher-item').forEach(el => el.classList.remove('selected'));
+             selected.teacher = null;
+             updateSummary();
+        });
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selected.menu = item.dataset.menu;
+
+                tempOptions.forEach(option => option.classList.remove('selected', 'disabled'));
+                tempWarning.style.display = 'none';
+                selected.temp = null;
+
+                const iceOnlyMenus = ['아샷추', '아이스티'];
+                if (iceOnlyMenus.includes(selected.menu)) {
+                    const hotOption = document.querySelector('.temp-option.hot');
+                    const iceOption = document.querySelector('.temp-option.ice');
+                    if (hotOption) hotOption.classList.add('disabled');
+                    if (iceOption) iceOption.click();
+                    tempWarning.textContent = '⚠️ ' + selected.menu + '는 ICE만 가능합니다!';
+                    tempWarning.style.display = 'block';
+                }
+
+                updateSummary();
+            });
+        });
+
+        tempOptions.forEach(item => {
+            item.addEventListener('click', () => {
+                if (item.classList.contains('disabled')) return;
+                tempOptions.forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selected.temp = item.dataset.temp;
+                updateSummary();
+            });
+        });
+
+        cupRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                selected.cup = radio.value;
+                if (selected.cup === '개인 텀블러') {
+                    tumblerNumbers.classList.add('show');
+                } else {
+                    tumblerNumbers.classList.remove('show');
+                    selected.tumblerNumber = null;
+                    document.querySelectorAll('.tumbler-num-btn').forEach(btn => btn.classList.remove('selected'));
+                }
+                updateSummary();
+            });
+        });
+
+        tumblerNumBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tumblerNumBtns.forEach(el => el.classList.remove('selected'));
+                btn.classList.add('selected');
+                selected.tumblerNumber = btn.dataset.number;
+                updateSummary();
+            });
+        });
+        
+        optionCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                selected.options = Array.from(optionCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                updateSummary();
+            });
+        });
+        
+        function submitOrder() {
+            const finalLocation = selected.location === '기타' ? otherLocationInput.value.trim() : selected.location;
+            const finalTeacher = otherTeacherInput.value.trim() || selected.teacher;
+
+            if (!finalLocation || !finalTeacher || !selected.menu || !selected.temp) {
+                alert('위치, 선생님, 메뉴, 온도를 모두 선택하거나 직접 입력해주세요.');
+                return;
+            }
+
+            if (selected.cup === '개인 텀블러' && !selected.tumblerNumber) {
+                alert('텀블러 번호를 선택해주세요.');
+                return;
+            }
+
+            const confirmMsg = `주문하시겠습니까?
+- 위치/선생님: ${finalLocation} / ${finalTeacher}
+- 메뉴: ${selected.menu}
+- 온도: ${selected.temp}
+- 컵: ${selected.cup}${selected.cup === '개인 텀블러' ? ' (' + selected.tumblerNumber + '번)' : ''}
+- 기타사항: ${selected.options.length > 0 ? selected.options.join(', ') : '없음'}`;
+
+            if (confirm(confirmMsg)) {
+                const newOrder = {
+                    id: Date.now(),
+                    location: finalLocation,
+                    teacher: finalTeacher,
+                    menu: selected.menu,
+                    temp: selected.temp,
+                    cup: selected.cup,
+                    tumblerNumber: selected.tumblerNumber,
+                    options: selected.options,
+                    isCompleted: false
+                };
+                orders.unshift(newOrder);
+                alert('주문이 완료되었습니다!');
+                resetForm();
+                renderAdminTable();
+            }
+        }
+        
+        function renderAdminTable() {
+            orderList.innerHTML = '';
+            orders.forEach((order, index) => {
+                const row = document.createElement('tr');
+                if (order.isCompleted) {
+                    row.classList.add('completed');
+                }
+                row.innerHTML = `
+                    <td>${orders.length - index}</td>
+                    <td>${order.location} / ${order.teacher}</td>
+                    <td>${order.menu}</td>
+                    <td>${order.temp}</td>
+                    <td>${order.cup === '개인 텀블러' ? `개인 텀블러 (${order.tumblerNumber}번)` : '위드인 컵'}</td>
+                    <td>${order.options.length > 0 ? order.options.join(', ') : '-'}</td>
+                    <td>
+                        <input type="checkbox" class="complete-checkbox" data-order-id="${order.id}" ${order.isCompleted ? 'checked' : ''}>
+                    </td>
+                `;
+                orderList.appendChild(row);
+            });
+
+            document.querySelectorAll('.complete-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const orderId = parseInt(e.target.dataset.orderId);
+                    const order = orders.find(o => o.id === orderId);
+                    if (order) {
+                        order.isCompleted = e.target.checked;
+                        renderAdminTable();
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
